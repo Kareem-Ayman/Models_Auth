@@ -8,6 +8,7 @@ use Validator;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
@@ -20,6 +21,12 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+
+        $token = JWTAuth::getToken("_token");
+        if ($token) {
+            $new_token = JWTAuth::refresh($token);
+        }
+        return $this->returnData("admin", $new_token);
 
         try {
             $rules = [

@@ -52,13 +52,16 @@ class VerificationController extends Controller
         try {
 
             DB::beginTransaction();
-
             $user = Auth::guard('user_api')->user();
             $token = JWTAuth::setToken($_token)->checkOrFail();
-            $pastVerify = User_verify_code::where('created_at', '>=', Carbon::now()->subMinutes(60))->first();
+            $pastVerify = User_verify_code::where('code', $_code)->where('created_at', '>=', Carbon::now()->subMinutes(30))->first();
             if($token && isset($pastVerify)){
-                return $this->returnData("data", Carbon::now());
-
+                $pastVerify->verified = 1;
+                $pastVerify->save();
+                DB::commit();
+                return view("mails.mailVerified");
+            }else{
+                return $this->returnError("s001", "something went wrong!");
             }
 
         } catch (\Exception $e) {
@@ -67,7 +70,6 @@ class VerificationController extends Controller
             return $this->returnError("s001", "something went wrong !");
         }
 
-        return view("mails.mailVerified");
     }
 
     public function phoneVerify(VerificationRequest $request, PhoneVerificationService $phoneVerificationService)
