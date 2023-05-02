@@ -8,11 +8,8 @@ class User_verify_code extends Model
 {
     protected $table = 'user_verify_codes';
 
-    protected $fillable = ['user_id', 'code','type'];
+    protected $fillable = ['user_id', 'code','type', 'verified'];
 
-    protected $hidden = [
-        'password'
-    ];
 
     public function user() {
         return $this -> belongsTo(User::class,'attribute_id');
