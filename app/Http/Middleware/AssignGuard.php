@@ -25,12 +25,12 @@ class AssignGuard
     {
         if($guard != null){
             auth()->shouldUse($guard); //shoud you user guard / table
-            $token = $request->header('_token');
-            $request->headers->set('_token', (string) $token, true);
+            $token = $request->header('token');
+            $request->headers->set('token', (string) $token, true);
             $request->headers->set('Authorization', 'Bearer '.$token, true);
             //return $this -> returnData("ll", Auth::guard()->user());
             try {
-                $user = Auth::guard()->user();
+                $user = JWTAuth::parseToken()->authenticate();
                 if(! $user){
                     return  $this -> returnError('401','Unauthenticated user!');
                 }

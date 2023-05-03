@@ -8,6 +8,7 @@ use Validator;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
@@ -22,11 +23,17 @@ class LoginController extends Controller
     public function login(Request $request)
     {
 
-        $token = JWTAuth::getToken("_token");
-        if ($token) {
-            $new_token = JWTAuth::refresh($token);
+
+        try {
+
+            $request->headers->set('Authorization', 'Bearer '.$request->header('_token'), true);
+            $token = JWTAuth::parseToken()->authenticate();
+
+        } catch (TokenExpiredException  $e) {
+            $new_token = JWTAuth::refresh();
+            return $this->returnData("admin", $new_token);
         }
-        return $this->returnData("admin", $new_token);
+
 
         try {
             $rules = [

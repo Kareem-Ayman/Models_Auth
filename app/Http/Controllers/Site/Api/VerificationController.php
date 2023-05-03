@@ -13,9 +13,11 @@ use App\Services\PhoneVerificationService;
 use App\Traits\GeneralTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class VerificationController extends Controller
@@ -28,7 +30,9 @@ class VerificationController extends Controller
 
             DB::beginTransaction();
 
-            $user = Auth::guard('user_api')->user();
+            $token = $request->header('token');
+            $request->headers->set('Authorization', 'Bearer '.$token, true);
+            $user = JWTAuth::parseToken()->authenticate();
             if(isset($user)){
                 $user_verified = $emailVerificationService->verify($user->id, $user->email, "email");
                 $user->codes = $user_verified;
@@ -45,28 +49,41 @@ class VerificationController extends Controller
         }
     }
 
-    public function email_verify_done($_token, $_code)
+    public function email_verify_done_request($_token, $_code)
     {
-        //return $this->returnData("data", Auth::guard('user_api')->user());
+        //return redirect()->route("user.email_verify_done_request")->header("Authorization",'Bearer '.$_token,true);
+    }
+
+    public function email_verify_done(Request $request, $_token, $_code)
+    {
 
         try {
 
             DB::beginTransaction();
             $user = Auth::guard('user_api')->user();
             $token = JWTAuth::setToken($_token)->checkOrFail();
-            $pastVerify = User_verify_code::where('code', $_code)->where('created_at', '>=', Carbon::now()->subMinutes(30))->first();
-            if($token && isset($pastVerify)){
-                $pastVerify->verified = 1;
-                $pastVerify->save();
-                DB::commit();
-                return view("mails.mailVerified");
-            }else{
-                return $this->returnError("s001", "something went wrong!");
+            try {
+
+                $request->headers->set('Authorization', 'Bearer '.$_token, true);
+                $token = JWTAuth::parseToken()->authenticate();
+                $pastVerify = User_verify_code::where('code', $_code)->where('created_at', '>=', Carbon::now()->subMinutes(30))->first();
+                if($token && isset($pastVerify)){
+                    $pastVerify->verified = 1;
+                    $pastVerify->save();
+                    DB::commit();
+                    return view("mails.mailVerified");
+                }else{
+                    return $this->returnError("s001", "something went wrong!");
+                }
+
+            } catch (TokenExpiredException  $e) {
+                //$new_token = JWTAuth::refresh();
+                return $this->returnError("401", "Token expired");
             }
 
         } catch (\Exception $e) {
             DB::rollback();
-            //return $this->returnData("data", $e);
+            //return $this->returnData("data", dd($e));
             return $this->returnError("s001", "something went wrong !");
         }
 
@@ -85,4 +102,20 @@ class VerificationController extends Controller
             return $this->returnError("s001", "something went wrong !");
         }
     }
+
+
+    public function cleareverything() {
+
+        $clearcache = Artisan::call('cache:clear');
+        echo "Cache cleared<br>";
+
+        $clearview = Artisan::call('view:clear');
+        echo "View cleared<br>";
+
+        $clearconfig = Artisan::call('config:cache');
+        echo "Config cleared<br>";
+
+    }
+
+
 }

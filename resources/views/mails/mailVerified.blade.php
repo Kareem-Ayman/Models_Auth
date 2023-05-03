@@ -381,7 +381,7 @@ table{
           </td>
 	      </tr><!-- end tr -->
 				<tr>
-          <td valign="middle" class="hero" style="background-image: url(https://i.pinimg.com/originals/3f/49/95/3f499500fd10ce26084f188b029a3395.jpg); background-size: cover; height: 400px;">
+          <td valign="middle" class="hero">
             <table>
             	<tr>
             		<td>

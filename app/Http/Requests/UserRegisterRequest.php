@@ -2,10 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\GeneralTrait;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * Summary of UserRegisterRequest
+ */
 class UserRegisterRequest extends FormRequest
 {
+    use GeneralTrait;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -31,4 +38,18 @@ class UserRegisterRequest extends FormRequest
             'number_phone' => 'required|string',
         ];
     }
+
+
+    public function failedValidation(Validator $validator)
+    {
+
+        throw new HttpResponseException($this->returnError("001", $validator->errors()->first()));
+
+    }
+
+
+
+
+
+
 }

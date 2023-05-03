@@ -52,7 +52,7 @@ class RegisterController extends Controller
                 return $this->returnError("E001", "incorrect!");
             }
             $user = Auth::guard('user_api')->user();
-            $user->_token = $token;
+            $user->token = $token;
 
             DB::commit();
 
