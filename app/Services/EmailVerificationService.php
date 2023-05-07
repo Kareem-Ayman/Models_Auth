@@ -16,13 +16,12 @@ class EmailVerificationService
 {
     use GeneralTrait;
 
-    public function verify($user_id, $email, $type)
+    public function verify($user_id, $email, $type, $token)
     {
 
         try {
 
             DB::beginTransaction();
-            Mail::to($email)->send(new TestMail());
             $code = random_int(100000,999999);
             $pastVerify = User_verify_code::where('user_id', $user_id)->where('type', $type)->first();
             if(isset($pastVerify)){
@@ -34,12 +33,13 @@ class EmailVerificationService
                 'verified' => 0,
                 'type' => $type,
             ]);
+            Mail::to($email)->send(new TestMail($user_verified, $token));
             DB::commit();
             return $user_verified;
 
         } catch (\Exception $e) {
             DB::rollback();
-            return $this->returnData("data", $e);
+            //return $this->returnData("data", $e);
             return $this->returnError("s001", "something went wrong !");
         }
     }

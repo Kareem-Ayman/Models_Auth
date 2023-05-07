@@ -13,7 +13,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     use Notifiable, AuthMustVerifyEmail;
 
     protected $fillable = [
-        'name', 'email', 'password','phone'
+        'name', 'email', 'password','phone','api_token'
     ];
 
     protected $hidden = [
@@ -24,6 +24,24 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this -> hasMany(User_verify_code::class,'user_id');
     }
 
+    public static function verefied_codes($user)
+    {
+        if(count($user->codes) < 2){
+            $user->email_verified = 0;
+            $user->phone_verified = 0;
+        }
+
+        foreach ($user->codes as $key) {
+            if($key->type == "email"){
+                $user->email_verified = $key->verified;
+            }elseif($key->type == "phone"){
+                $user->phone_verified = $key->verified;
+            }
+        }
+
+        unset($user->codes);
+        return $user;
+    }
 
     public function getJWTIdentifier()
     {

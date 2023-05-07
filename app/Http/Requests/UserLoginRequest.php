@@ -5,15 +5,13 @@ namespace App\Http\Requests;
 use App\Traits\GeneralTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
 
-/**
- * Summary of UserRegisterRequest
- */
-class UserRegisterRequest extends FormRequest
+class UserLoginRequest extends FormRequest
 {
     use GeneralTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -29,14 +27,11 @@ class UserRegisterRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(Request $request)
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users|max:255',
-            'password' => 'required|string|min:8',
-            'key_phone' => 'required|string',
-            'phone' => 'required|phone:SA,EG|unique:users',
+            "email" => "required|exists:users,email",
+            "password" => "required"
         ];
     }
 
@@ -47,10 +42,4 @@ class UserRegisterRequest extends FormRequest
         throw new HttpResponseException($this->returnError("001", $validator->errors()->first()));
 
     }
-
-
-
-
-
-
 }

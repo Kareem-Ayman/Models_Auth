@@ -39,24 +39,28 @@ class RegisterController extends Controller
         try{
 
             DB::beginTransaction();
-            $user = User::create([
+            $user_data = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
-                'phone' => $request->key_phone.$request->number_phone,
-            ]);
+                'phone' => $request->phone,
+            ])->with('codes')->latest()->first();
 
             $credentials = $request->only(["email", "password"]);
             $token = Auth::guard("user_api")->attempt($credentials);
             if (!$token) {
                 return $this->returnError("E001", "incorrect!");
             }
+
+            $user_data-> api_token = $token;
+            $user_data-> save();
             $user = Auth::guard('user_api')->user();
             $user->token = $token;
+            $user_data = User::verefied_codes($user_data);
 
             DB::commit();
 
-            return $this->returnData("data", $user);
+            return $this->returnData("user", $user_data);
 
 
         } catch (\Exception $e) {

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Traits\GeneralTrait;
 use Closure;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
@@ -24,26 +25,34 @@ class AssignGuard
     public function handle($request, Closure $next, $guard=null)
     {
         if($guard != null){
+
             auth()->shouldUse($guard); //shoud you user guard / table
             $token = $request->header('token');
             $request->headers->set('token', (string) $token, true);
             $request->headers->set('Authorization', 'Bearer '.$token, true);
-            //return $this -> returnData("ll", Auth::guard()->user());
             try {
-                $user = JWTAuth::parseToken()->authenticate();
-                if(! $user){
-                    return  $this -> returnError('401','Unauthenticated user!');
+                if (Auth::guard($guard)->user()) {
+                    $token = JWTAuth::parseToken()->authenticate();
+                    if(! $token){
+                        return $this->returnError("s001", "Unauthenticated user!");
+                    }
+                }else{
+                    return $this->returnError("s001", "You are not user!");
                 }
+
                 //$user = $this->auth->authenticate($request);  //check authenticted user
                 //$user = JWTAuth::parseToken()->authenticate();
-            } catch (TokenExpiredException $e) {
-                return  $this -> returnError('401','Unauthenticated user');
-            } catch (JWTException $e) {
+                return $next($request);
 
-                return  $this -> returnError('', 'Unauthenticated user');
+            } catch (TokenExpiredException $e) {
+                return  $this -> returnError('401','Token Expired');
+            } catch (JWTException $e) {
+                //return $this->returnData("data", dd($e));
+                return  $this -> returnError('401', 'Unauthenticated user');
             }
 
         }
-        return $next($request);
+
+
     }
 }

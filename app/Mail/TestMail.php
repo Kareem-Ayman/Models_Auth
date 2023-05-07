@@ -16,9 +16,14 @@ class TestMail extends Mailable
      *
      * @return void
      */
-    public function __construct()
+
+    public $user_code;
+    public $user_token;
+
+    public function __construct($user_code, $user_token)
     {
-        //
+        $this->user_code = $user_code;
+        $this->user_token = $user_token;
     }
 
     /**
@@ -28,7 +33,6 @@ class TestMail extends Mailable
      */
     public function build()
     {
-
-        return $this->subject('Here we are')->view('mails.myTestMail');
+        return $this->subject('Here we are')->view('mails.myTestMail', ["user_code"=> $this->user_code, "user_token"=> $this->user_token]);
     }
 }

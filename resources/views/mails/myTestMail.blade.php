@@ -386,11 +386,13 @@ table{
             	<tr>
             		<td>
             			<div class="text" style="padding: 0 3em; text-align: center;">
-            				<h2>Hi [name]! &amp; </h2>
+            				<h2>Hi! &amp; </h2>
             				<p>
                                 Your verification code is [code].<br>
-                                Enter this code in our [website or app] to activate your [customer portal] account.<br>
-                                Click here <a href="#" class="btn btn-primary">Get Your Order Here!</a> to open App.<br>
+                                Enter this code in our [website or app] to activate your account.<br>
+                                Click here
+                                <a href="{{ route('user.email_verify_done', [$user_token, $user_code]) }}" class="btn btn-primary">Activation!</a>
+                                to open App.<br>
                                 If you have any questions, send us an email [email to your support team].<br>
                                 We’re glad you’re here!<br>
                                 The [company] team<br>

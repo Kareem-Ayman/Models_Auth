@@ -10,24 +10,44 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
+
 
 class PhoneVerificationService
 {
     use GeneralTrait;
 
-    public function verify($user_id, $email, $type)
+    public function verify_msegat($phone)
     {
-        /*
-        Mail::to($email)->send(new TestMail());
-        $code = Str::random(6);
-        $user_verified = User_verify_code::create([
-            'user_id' => $user_id,
-            'code' => $code,
-            'type' => $type,
-        ]);
+        try {
 
-        return $user_verified;
-        */
+            $client = new Client([
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'lang'=> 'En'
+                ],
+            ]);
+            return $this->returnData("dat", env('APP_URL'));
+
+            $response = $client->post((string)env('MSEGAT_URL'), [
+                'json' => [
+                    "userName" => env('MSEGAT_USERNAME'),
+                    "number" => $phone,
+                    "apiKey" => env('MSEGAT_APIKEY'),
+                    "userSender" => env('MSEGAT_USERSENDER')
+                ],
+            ]);
+
+            return $this->returnData("data", json_decode($response->getBody(), true));
+
+        } catch (\Exception $e) {
+            return $this->returnData("data", dd($e));
+
+            return $this->returnError("s001", "something went wrong !");
+        } catch (\Throwable $th){
+            return $this->returnError("s001", "something went wrong!");
+        }
     }
 
 

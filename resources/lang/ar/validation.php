@@ -189,5 +189,12 @@ return [
     "you_have_been_invited_to_join_team" => "لقد تمت دعوتك للإنضمام إلى فريق :teamName!",
     "you_have_x_invitations_remaining" => "لديك حاليا :count دعوة/دعوات متبقية.",
     "you_have_x_teams_remaining" => "لديك حاليا :teamCount فرق متبقية.",
+    'phone' => 'رقم الهاتف غير صحيح',
+
+    'attributes' => [
+        'email' => "البريد الإلكتروني",
+        'password' => "كلمة المرور",
+        'phone' => "رقم الهاتف",
+    ],
 
 ];

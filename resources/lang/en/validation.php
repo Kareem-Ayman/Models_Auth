@@ -189,6 +189,7 @@ return [
     "you_have_been_invited_to_join_team" => "You have been invited to join the :teamName team!",
     "you_have_x_invitations_remaining" => " You currently have :count invitation(s) remaining.",
     "you_have_x_teams_remaining" => "You currently have :teamCount teams remaining.",
+    'phone' => 'The :attribute field must be a valid number.',
 
     /*
     |--------------------------------------------------------------------------

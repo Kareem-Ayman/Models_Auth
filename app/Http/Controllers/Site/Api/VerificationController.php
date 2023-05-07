@@ -19,12 +19,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use GuzzleHttp\Client;
 
 class VerificationController extends Controller
 {
     use GeneralTrait;
 
-    public function emailVerify(VerificationRequest $request, EmailVerificationService $emailVerificationService)
+    public function emailVerify(Request $request, EmailVerificationService $emailVerificationService)
     {
         try {
 
@@ -34,7 +35,7 @@ class VerificationController extends Controller
             $request->headers->set('Authorization', 'Bearer '.$token, true);
             $user = JWTAuth::parseToken()->authenticate();
             if(isset($user)){
-                $user_verified = $emailVerificationService->verify($user->id, $user->email, "email");
+                $user_verified = $emailVerificationService->verify($user->id, $user->email, "email", $token);
                 $user->codes = $user_verified;
                 DB::commit();
                 return $this->returnData("data", $user);
@@ -49,10 +50,6 @@ class VerificationController extends Controller
         }
     }
 
-    public function email_verify_done_request($_token, $_code)
-    {
-        //return redirect()->route("user.email_verify_done_request")->header("Authorization",'Bearer '.$_token,true);
-    }
 
     public function email_verify_done(Request $request, $_token, $_code)
     {
@@ -94,6 +91,8 @@ class VerificationController extends Controller
         try {
 
             DB::beginTransaction();
+            $data = $phoneVerificationService->verify_msegat($request->phone);
+            return $this->returnData("data", $data);
 
 
         } catch (\Exception $e) {
@@ -102,6 +101,21 @@ class VerificationController extends Controller
             return $this->returnError("s001", "something went wrong !");
         }
     }
+
+    public function phone_verify_done(VerificationRequest $request, PhoneVerificationService $phoneVerificationService)
+    {
+        try {
+
+            DB::beginTransaction();
+
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            //return $this->returnData("data", $e);
+            return $this->returnError("s001", "something went wrong !");
+        }
+    }
+
 
 
     public function cleareverything() {
