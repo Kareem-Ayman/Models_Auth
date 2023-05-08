@@ -92,7 +92,7 @@ class VerificationController extends Controller
 
             DB::beginTransaction();
             $data = $phoneVerificationService->verify_msegat($request->phone);
-            return $this->returnData("data", $data);
+            return $this->returnData("verify_code", $data);
 
 
         } catch (\Exception $e) {
@@ -127,6 +127,9 @@ class VerificationController extends Controller
         echo "View cleared<br>";
 
         $clearconfig = Artisan::call('config:cache');
+        echo "Config cleared<br>";
+
+        $configclear = Artisan::call('config:clear');
         echo "Config cleared<br>";
 
     }

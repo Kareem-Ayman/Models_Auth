@@ -21,6 +21,8 @@ class PhoneVerificationService
     {
         try {
 
+            $phone = Str::substr($phone, 0, 4) == '+200' ? str_replace('+200', '+20', $phone) : $phone;
+
             $client = new Client([
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -28,9 +30,9 @@ class PhoneVerificationService
                     'lang'=> 'En'
                 ],
             ]);
-            return $this->returnData("dat", env('APP_URL'));
+            //return $this->returnData("data", $phone);
 
-            $response = $client->post((string)env('MSEGAT_URL'), [
+            $response = $client->post(env('MSEGAT_URL').'/sendOTPCode.php', [
                 'json' => [
                     "userName" => env('MSEGAT_USERNAME'),
                     "number" => $phone,
@@ -39,7 +41,9 @@ class PhoneVerificationService
                 ],
             ]);
 
-            return $this->returnData("data", json_decode($response->getBody(), true));
+            //return $this->returnData("data", json_decode($response->getBody(), true));
+
+            return json_decode($response->getBody(), true);
 
         } catch (\Exception $e) {
             return $this->returnData("data", dd($e));
