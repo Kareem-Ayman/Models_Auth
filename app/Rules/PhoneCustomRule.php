@@ -3,21 +3,18 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Validator;
 
-class ExistToUserRule implements Rule
+class PhoneCustomRule implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-
-    protected $attr;
-
-    public function __construct($attr)
+    public function __construct()
     {
-        $this->attr = $attr;
+        //
     }
 
     /**
@@ -29,12 +26,18 @@ class ExistToUserRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        $attr = $this->attr;
-        if($user->$attr == $value){
-            return true;
-        }else{
+        if(substr($value, 0, 1) != "+"){
             return false;
+        }
+
+        $validator = Validator::make([$attribute => $value], [
+            'value' => 'phone:SA,EG',
+        ]);
+
+        if ($validator->fails()) {
+            return false;
+        }else{
+            return true;
         }
     }
 
@@ -45,6 +48,6 @@ class ExistToUserRule implements Rule
      */
     public function message()
     {
-        return __('validation.phone_not_exist_for_user');
+        return __('validation.phone');
     }
 }

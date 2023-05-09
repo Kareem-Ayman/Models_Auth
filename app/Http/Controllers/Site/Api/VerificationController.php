@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
 use GuzzleHttp\Client;
 
 class VerificationController extends Controller
@@ -58,7 +59,32 @@ class VerificationController extends Controller
     {
         try {
 
-            return $phoneVerificationService->verify_msegat($request->phone);
+            DB::beginTransaction();
+            $phone = Str::substr($request->phone, 0, 4) == '+200' ? str_replace('+200', '+20', $request->phone) : $request->phone;
+            $user = JWTAuth::parseToken()->authenticate();
+            $pastVerify = User_verify_code::where('user_id', $user->id)->where('type', "phone")->first();
+            if($pastVerify->verified == 1){
+                return $this->returnSuccessMessage("You are verified !");
+            }
+
+            $response_content = $phoneVerificationService->verify_msegat($phone);
+
+            if($response_content['message'] == "Success"){
+
+                if(isset($pastVerify)){
+                    $pastVerify->delete();
+                }
+                $user_verified = User_verify_code::create([
+                    'user_id' => $user->id,
+                    'code' => $response_content['id'],
+                    'verified' => 0,
+                    'type' => 'phone',
+                ]);
+
+            }
+
+            DB::commit();
+            return $this->returnData("verify_code", $response_content);
 
         } catch (\Exception $e) {
             //return $this->returnData("data", $e);
@@ -70,8 +96,28 @@ class VerificationController extends Controller
     {
         try {
 
+            DB::beginTransaction();
+            $user = JWTAuth::parseToken()->authenticate();
+            $pastVerify = User_verify_code::where('user_id', $user->id)->where('type', "phone")->first();
+            if($pastVerify->verified == 1){
+                return $this->returnSuccessMessage("You are verified !");
+            }
 
-            return $phoneVerificationService->verify_msegat_done($request->code, $request->id);
+            $response_content = $phoneVerificationService->verify_msegat_done($request->code, $request->id);
+
+            if($response_content['message'] == "Success"){
+
+                if(isset($pastVerify)){
+                    $pastVerify->verified = 1;
+                    $pastVerify->save();
+                }
+
+                DB::commit();
+                return $this->returnSuccessMessage("Phone verified !");
+
+            }else{
+                return $this->returnError("s001", "something went wrong_!");
+            }
 
 
         } catch (\Exception $e) {
@@ -79,7 +125,6 @@ class VerificationController extends Controller
             return $this->returnError("s001", "something went wrong !");
         }
     }
-
 
 
     public function cleareverything() {
@@ -91,13 +136,13 @@ class VerificationController extends Controller
         echo "View cleared<br>";
 
         $clearconfig = Artisan::call('config:cache');
-        echo "Config cleared<br>";
+        echo "Config cached<br>";
 
         $configclear = Artisan::call('config:clear');
         echo "Config cleared<br>";
-        
+
         $configclear = Artisan::call('route:cache');
-        echo "Config cleared<br>";
+        echo "route cleared<br>";
 
 
     }

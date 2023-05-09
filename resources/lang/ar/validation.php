@@ -190,6 +190,10 @@ return [
     "you_have_x_invitations_remaining" => "لديك حاليا :count دعوة/دعوات متبقية.",
     "you_have_x_teams_remaining" => "لديك حاليا :teamCount فرق متبقية.",
     'phone' => 'رقم الهاتف غير صحيح',
+    'phone_not_exist_for_user' => 'هذه القيمة ليست لهذا المستخدم',
+    'type_in' => ':attribute يجب ان يكون 0 او 1',
+    'send_forget_value_rule' => 'هناك خطأ فى :attribute',
+
 
     'attributes' => [
         'email' => "البريد الإلكتروني",

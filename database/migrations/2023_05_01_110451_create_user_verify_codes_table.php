@@ -19,7 +19,7 @@ class CreateUserVerifyCodesTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('code');
             $table->tinyInteger('verified');
-            $table->enum('type', ['phone', 'email']);
+            $table->enum('type', ['phone', 'email','forget_phone','forget_email']);
             $table->timestamps();
 
             $table->unique(['user_id', 'type']);

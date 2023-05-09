@@ -23,14 +23,6 @@ class PhoneVerificationService
     {
         try {
 
-            DB::beginTransaction();
-            $phone = Str::substr($phone, 0, 4) == '+200' ? str_replace('+200', '+20', $phone) : $phone;
-            $user = JWTAuth::parseToken()->authenticate();
-            $pastVerify = User_verify_code::where('user_id', $user->id)->where('type', "phone")->first();
-            if($pastVerify->verified == 1){
-                return $this->returnSuccessMessage("You are verified !");
-            }
-
             $client = new Client([
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -48,23 +40,7 @@ class PhoneVerificationService
                 ],
             ]);
 
-            $response_content = json_decode($response->getBody()->getContents(), true);
-            if($response_content['message'] == "Success"){
-
-                if(isset($pastVerify)){
-                    $pastVerify->delete();
-                }
-                $user_verified = User_verify_code::create([
-                    'user_id' => $user->id,
-                    'code' => $response_content['id'],
-                    'verified' => 0,
-                    'type' => 'phone',
-                ]);
-
-            }
-
-            DB::commit();
-            return $this->returnData("verify_code", json_decode($response->getBody(), true));
+            return $response_content = json_decode($response->getBody()->getContents(), true);
 
             //return json_decode($response->getBody(), true);
 
@@ -84,12 +60,7 @@ class PhoneVerificationService
     {
         try {
 
-            DB::beginTransaction();
-            $user = JWTAuth::parseToken()->authenticate();
-            $pastVerify = User_verify_code::where('user_id', $user->id)->where('type', "phone")->first();
-            if($pastVerify->verified == 1){
-                return $this->returnSuccessMessage("You are verified !");
-            }
+
 
             $client = new Client([
                 'headers' => [
@@ -109,24 +80,7 @@ class PhoneVerificationService
                 ],
             ]);
 
-            $response_content = json_decode($response->getBody()->getContents(), true);
-            if($response_content['message'] == "Success"){
-
-                if(isset($pastVerify)){
-                    $pastVerify->verified = 1;
-                    $pastVerify->save();
-                }
-
-                DB::commit();
-                return $this->returnSuccessMessage("Phone verified !");
-
-            }else{
-                return $this->returnError("s001", "something went wrong_!");
-            }
-
-
-
-            //return json_decode($response->getBody(), true);
+            return json_decode($response->getBody()->getContents(), true);
 
         } catch (\Exception $e) {
             DB::rollback();

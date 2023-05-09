@@ -19,6 +19,14 @@ class EmailVerificationService
 {
     use GeneralTrait;
 
+    protected $myService;
+
+    public function __construct()
+    {
+        $myService = new SendEmailService();
+        $this->myService = $myService;
+    }
+
     public function verify()
     {
 
@@ -41,14 +49,14 @@ class EmailVerificationService
                 'type' => "email",
             ]);
 
-            Mail::to($user->email)->send(new TestMail($user_verified->code));
+            $this->myService->send($user->email, new TestMail($user_verified->code));
+            //Mail::to($user->email)->send(new TestMail($user_verified->code));
             DB::commit();
-            //return $this->returnData("data", $user_verified);
             return $this->returnSuccessMessage("Email sent successfully !");
 
         } catch (\Exception $e) {
             DB::rollback();
-            return $this->returnData("dat", dd($e));
+            //return $this->returnData("dat", dd($e));
             return $this->returnError("s001", "something went wrong !");
         }
 

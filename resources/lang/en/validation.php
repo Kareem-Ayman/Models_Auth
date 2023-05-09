@@ -190,6 +190,9 @@ return [
     "you_have_x_invitations_remaining" => " You currently have :count invitation(s) remaining.",
     "you_have_x_teams_remaining" => "You currently have :teamCount teams remaining.",
     'phone' => 'The :attribute field must be a valid number.',
+    'phone_not_exist_for_user' => 'this value not for this user',
+    'type_in' => ':attribute must be 1 or 0',
+    'send_forget_value_rule' => 'Something wrong in :attribute',
 
     /*
     |--------------------------------------------------------------------------

@@ -19,20 +19,7 @@ use Illuminate\Support\Facades\Mail;
 class RegisterController extends Controller
 {
     use GeneralTrait;
-/*
-    public $emailVerifServ;
 
-    public function __construct(EmailVerificationService $emailVerificationService){
-        $this->emailVerifServ = $emailVerificationService;
-    }
-    public function emailVerify(EmailVerificationService $emailVerificationService)
-    {
-        $user = Auth::guard('user_api')->user();
-        $emailVerificationService->verify($user);
-        return redirect('/home');
-    }
-
-    */
     public function register(UserRegisterRequest $request)
     {
 

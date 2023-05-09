@@ -3,15 +3,16 @@
 namespace App\Http\Requests;
 
 use App\Rules\ExistToUserRule;
-use App\Rules\PhoneCustomRule;
+use App\Rules\SendForgetValueRule;
 use App\Traits\GeneralTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-class VerificationRequest extends FormRequest
+class SendForgetRequest extends FormRequest
 {
     use GeneralTrait;
 
@@ -34,7 +35,8 @@ class VerificationRequest extends FormRequest
     {
 
         return [
-            'phone' => ['required', new PhoneCustomRule(), 'exists:users,phone', new ExistToUserRule('phone')],
+            'type' => ['required', Rule::in([1, 0])],
+            'value' => ['required', new SendForgetValueRule($request->type)],
         ];
     }
 
@@ -44,4 +46,12 @@ class VerificationRequest extends FormRequest
         throw new HttpResponseException($this->returnError("001", $validator->errors()->first()));
 
     }
+
+    public function messages()
+    {
+        return [
+            'type.in' => __('validation.type_in')
+        ];
+    }
+
 }

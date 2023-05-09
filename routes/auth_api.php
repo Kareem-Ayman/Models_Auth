@@ -41,6 +41,8 @@ Route::group([
         Route::post('/register', 'RegisterController@register')->name('user.register');
         Route::post('/refreshToken', 'LoginController@refreshToken')->name('user.refreshToken');
         Route::post('/login', 'LoginController@login')->name('user.login');
+        Route::post('/send_forget', 'ForgetPasswordController@send_forget')->name('user.send_forget');
+        Route::post('/receive_forget', 'ForgetPasswordController@receive_forget')->name('user.receive_forget');
 
     });
 

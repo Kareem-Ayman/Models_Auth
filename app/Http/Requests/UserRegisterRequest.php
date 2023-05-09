@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\PhoneCustomRule;
 use App\Traits\GeneralTrait;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,7 +37,7 @@ class UserRegisterRequest extends FormRequest
             'email' => 'required|email|unique:users|max:255',
             'password' => 'required|string|min:8',
             'key_phone' => 'required|string',
-            'phone' => 'required|phone:SA,EG|unique:users',
+            'phone' => ['required', new PhoneCustomRule(), 'unique:users'],
         ];
     }
 
