@@ -19,6 +19,13 @@ trait GeneralTrait
         ]);
     }
 
+    public function returnErrorResponse($msg)
+    {
+        return response()->json([
+            'msg' => $msg
+        ], 401);
+    }
+
 
     public function returnSuccessMessage($msg = "", $errNum = "S000")
     {

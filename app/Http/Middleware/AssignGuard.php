@@ -37,7 +37,7 @@ class AssignGuard
                         return $this->returnError("s001", "Unauthenticated user!");
                     }
                 }else{
-                    return $this->returnError("s001", "You are not user!");
+                    return $this->returnErrorResponse("You are not user!");
                 }
 
                 //$user = $this->auth->authenticate($request);  //check authenticted user

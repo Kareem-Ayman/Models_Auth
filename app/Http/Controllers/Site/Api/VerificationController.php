@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PhoneVerifyRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\VerificationRequest;
 use App\Mail\TestMail;
@@ -29,19 +30,7 @@ class VerificationController extends Controller
     {
         try {
 
-            DB::beginTransaction();
-
-            $token = $request->header('token');
-            $request->headers->set('Authorization', 'Bearer '.$token, true);
-            $user = JWTAuth::parseToken()->authenticate();
-            if(isset($user)){
-                $user_verified = $emailVerificationService->verify($user->id, $user->email, "email", $token);
-                $user->codes = $user_verified;
-                DB::commit();
-                return $this->returnData("data", $user);
-            }else{
-                return $this->returnError("s001", "You are not login !");
-            }
+            return $emailVerificationService->verify();
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -51,37 +40,16 @@ class VerificationController extends Controller
     }
 
 
-    public function email_verify_done(Request $request, $_token, $_code)
+    public function email_verify_done(Request $request, $_code, EmailVerificationService $emailVerificationService)
     {
 
         try {
 
-            DB::beginTransaction();
-            $user = Auth::guard('user_api')->user();
-            $token = JWTAuth::setToken($_token)->checkOrFail();
-            try {
-
-                $request->headers->set('Authorization', 'Bearer '.$_token, true);
-                $token = JWTAuth::parseToken()->authenticate();
-                $pastVerify = User_verify_code::where('code', $_code)->where('created_at', '>=', Carbon::now()->subMinutes(30))->first();
-                if($token && isset($pastVerify)){
-                    $pastVerify->verified = 1;
-                    $pastVerify->save();
-                    DB::commit();
-                    return view("mails.mailVerified");
-                }else{
-                    return $this->returnError("s001", "something went wrong!");
-                }
-
-            } catch (TokenExpiredException  $e) {
-                //$new_token = JWTAuth::refresh();
-                return $this->returnError("401", "Token expired");
-            }
+            return $emailVerificationService->verify_done($_code);
 
         } catch (\Exception $e) {
-            DB::rollback();
             //return $this->returnData("data", dd($e));
-            return $this->returnError("s001", "something went wrong !");
+            return view("mails.error_page");
         }
 
     }
@@ -90,27 +58,23 @@ class VerificationController extends Controller
     {
         try {
 
-            DB::beginTransaction();
-            $data = $phoneVerificationService->verify_msegat($request->phone);
-            return $this->returnData("verify_code", $data);
-
+            return $phoneVerificationService->verify_msegat($request->phone);
 
         } catch (\Exception $e) {
-            DB::rollback();
             //return $this->returnData("data", $e);
             return $this->returnError("s001", "something went wrong !");
         }
     }
 
-    public function phone_verify_done(VerificationRequest $request, PhoneVerificationService $phoneVerificationService)
+    public function phone_verify_done(PhoneVerifyRequest $request, PhoneVerificationService $phoneVerificationService)
     {
         try {
 
-            DB::beginTransaction();
+
+            return $phoneVerificationService->verify_msegat_done($request->code, $request->id);
 
 
         } catch (\Exception $e) {
-            DB::rollback();
             //return $this->returnData("data", $e);
             return $this->returnError("s001", "something went wrong !");
         }
@@ -131,6 +95,10 @@ class VerificationController extends Controller
 
         $configclear = Artisan::call('config:clear');
         echo "Config cleared<br>";
+        
+        $configclear = Artisan::call('route:cache');
+        echo "Config cleared<br>";
+
 
     }
 

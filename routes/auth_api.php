@@ -19,7 +19,7 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 Route::get('/cleareverything', 'VerificationController@cleareverything');
 
 
-Route::get('/email_verify_done/{_token}/{_code}', 'VerificationController@email_verify_done')->name('user.email_verify_done');
+Route::get('/email_verify_done/{_code}', 'VerificationController@email_verify_done')->name('user.email_verify_done');
 
 
 Route::group([
@@ -32,6 +32,7 @@ Route::group([
         Route::post('/checklogin', 'LoginController@checkLogin')->name('user.checklogin');
         Route::post('/emailVerify', 'VerificationController@emailVerify')->name('user.emailVerify');
         Route::post('/phoneVerify', 'VerificationController@phoneVerify')->name('user.phoneVerify');
+        Route::post('/phone_verify_done', 'VerificationController@phone_verify_done')->name('user.phone_verify_done');
         Route::post('/logout', 'LoginController@logout')->name('user.logout');
 
     });

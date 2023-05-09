@@ -54,26 +54,31 @@ class LoginController extends Controller
     public function login(UserLoginRequest $request)
     {
 
-        try {
-
-            if ($token = auth()->guard('user_api')->attempt(['email' => $request->input("email"), 'password' => $request->input("password")])) {
-                $user = User::where('email', $request->input("email"))->with('codes')->first();
-                $old_token = $user->api_token;
-                $user->api_token = $token;
-                $user->save();
-                // set token without setting headers
-                JWTAuth::setToken($old_token);
-                if($old_token && Auth::guard("user_api")->user()){
-                    // destroy token if you want forever invalidate(true)
-                    JWTAuth::invalidate(JWTAuth::getToken());
+        $attempts = 0;
+        while ($attempts < 2) {
+            try {
+                if ($token = auth()->guard('user_api')->attempt(['email' => $request->input("email"), 'password' => $request->input("password")])) {
+                    $user = User::where('email', $request->input("email"))->with('codes')->first();
+                    $old_token = $user->api_token;
+                    $user->api_token = $token;
+                    $user->save();
+                    // set token without setting headers
+                    JWTAuth::setToken($old_token);
+                    if($old_token && Auth::guard("user_api")->user()){
+                        // destroy token if you want forever invalidate(true)
+                        JWTAuth::invalidate(JWTAuth::getToken());
+                    }
+                    $user = User::verefied_codes($user);
+                    $attempts = 2;
+                    return $this->returnData("user", $user);
                 }
-                $user = User::verefied_codes($user);
-                return $this->returnData("user", $user);
-            }
-            return $this->returnError("E001", "email or password is incorrect!");
+                return $this->returnError("E001", "email or password is incorrect!");
 
-        } catch (Exception $e) {
-            return $this->returnError($e->getCode(), dd($e));
+            } catch (TokenExpiredException $e) {
+                $attempts++;
+            } catch (Exception $e) {
+                return $this->returnError($e->getCode(), dd($e));
+            }
         }
     }
 
