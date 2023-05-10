@@ -45,7 +45,7 @@ class UserRegisterRequest extends FormRequest
     public function failedValidation(Validator $validator)
     {
 
-        throw new HttpResponseException($this->returnError("001", $validator->errors()->first()));
+        throw new HttpResponseException($this->returnErrorResponse($validator->errors()->first(), 400));
 
     }
 

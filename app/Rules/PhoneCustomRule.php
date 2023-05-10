@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class PhoneCustomRule implements Rule
 {
@@ -26,18 +27,26 @@ class PhoneCustomRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        if(substr($value, 0, 1) != "+"){
-            return false;
-        }
+        try {
+            //code...
 
-        $validator = Validator::make([$attribute => $value], [
-            'value' => 'phone:SA,EG',
-        ]);
+            if(substr($value, 0, 1) != "+"){
+                return false;
+            }
 
-        if ($validator->fails()) {
+            $phone = PhoneNumber::make($value, PHONE_COUNTRIES);
+            $phone->formatE164();
+
+            if (! $phone) {
+                return false;
+            }else{
+                return true;
+            }
+
+        } catch (\Throwable $th) {
+            //throw $th;
             return false;
-        }else{
-            return true;
+
         }
     }
 

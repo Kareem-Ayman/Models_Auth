@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 //use Mail;
 
@@ -26,17 +27,19 @@ class RegisterController extends Controller
         try{
 
             DB::beginTransaction();
+            $phone = PhoneNumber::make($request->phone, PHONE_COUNTRIES);
+            $phone->formatE164();
             $user_data = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
-                'phone' => $request->phone,
+                'phone' => $phone,
             ])->with('codes')->latest()->first();
 
             $credentials = $request->only(["email", "password"]);
             $token = Auth::guard("user_api")->attempt($credentials);
             if (!$token) {
-                return $this->returnError("E001", "incorrect!");
+                return $this->returnErrorResponse("incorrect!",400);
             }
 
             $user_data-> api_token = $token;
@@ -52,8 +55,8 @@ class RegisterController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            //return $this->returnData("data", $e);
-            return $this->returnError("s001", "something went wrong !");
+            return $this->returnData("data", dd($e));
+            return $this->returnErrorResponse("something went wrong !", 400);
         }
 
     }

@@ -72,12 +72,14 @@ class LoginController extends Controller
                     $attempts = 2;
                     return $this->returnData("user", $user);
                 }
-                return $this->returnError("E001", "email or password is incorrect!");
+                return $this->returnErrorResponse("email or password is incorrect!",400);
 
             } catch (TokenExpiredException $e) {
                 $attempts++;
             } catch (Exception $e) {
-                return $this->returnError($e->getCode(), dd($e));
+                //return $this->returnError($e->getCode(), dd($e));
+                return $this->returnErrorResponse("Somethis went wrong !", 400);
+
             }
         }
     }
@@ -87,7 +89,7 @@ class LoginController extends Controller
         $user = User::where('api_token', $request->header("token"))->first();
         $user->api_token = null;
         $user->save();
-        return $this->returnError("", "You are logout");
+        return $this->returnSuccessMessage("You are logout", "s000");
 
     }
 

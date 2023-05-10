@@ -36,18 +36,22 @@ class SendForgetValueRule implements Rule
 
         }elseif($this->type == 0){
 
-            if(substr($value, 0, 1) != "+"){
-                return false;
-            }
+            try {
+                //code...
+                if(substr($value, 0, 1) != "+"){
+                    return false;
+                }
 
-            $validator = Validator::make([$attribute => $value], [
-                'value' => 'phone:SA,EG',
-            ]);
-
-            if ($validator->fails()) {
+                $phone = PhoneNumber::make($value, PHONE_COUNTRIES);
+                $phone->formatE164();
+                if (! $phone) {
+                    return false;
+                }else{
+                    return true;
+                }
+            } catch (\Throwable $th) {
                 return false;
-            }else{
-                return true;
+                //throw $th;
             }
 
 

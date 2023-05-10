@@ -33,9 +33,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
         foreach ($user->codes as $key) {
             if($key->type == "email"){
-                $user->email_verified = $key->verified;
+                $user->email_verified = isset($key->verified) ? $key->verified : 0;
             }elseif($key->type == "phone"){
-                $user->phone_verified = $key->verified;
+                $user->phone_verified = isset($key->verified) ? $key->verified : 0;
             }
         }
 

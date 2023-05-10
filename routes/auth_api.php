@@ -43,6 +43,7 @@ Route::group([
         Route::post('/login', 'LoginController@login')->name('user.login');
         Route::post('/send_forget', 'ForgetPasswordController@send_forget')->name('user.send_forget');
         Route::post('/receive_forget', 'ForgetPasswordController@receive_forget')->name('user.receive_forget');
+        Route::post('/reset_pass_forget', 'ForgetPasswordController@reset_pass_forget')->name('user.reset_pass_forget');
 
     });
 

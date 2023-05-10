@@ -34,10 +34,10 @@ class AssignGuard
                 if (Auth::guard($guard)->user()) {
                     $token = JWTAuth::parseToken()->authenticate();
                     if(! $token){
-                        return $this->returnError("s001", "Unauthenticated user!");
+                        return $this->returnErrorResponse("Unauthenticated user!", 401);
                     }
                 }else{
-                    return $this->returnErrorResponse("You are not user!");
+                    return $this->returnErrorResponse("You are not user!", 401);
                 }
 
                 //$user = $this->auth->authenticate($request);  //check authenticted user
@@ -45,10 +45,10 @@ class AssignGuard
                 return $next($request);
 
             } catch (TokenExpiredException $e) {
-                return  $this -> returnError('401','Token Expired');
+                return  $this -> returnErrorResponse('Token Expired',401);
             } catch (JWTException $e) {
                 //return $this->returnData("data", dd($e));
-                return  $this -> returnError('401', 'Unauthenticated user');
+                return  $this -> returnErrorResponse('Unauthenticated user',401);
             }
 
         }

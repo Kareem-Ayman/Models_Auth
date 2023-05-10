@@ -36,7 +36,7 @@ class VerificationController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             //return $this->returnData("data", $e);
-            return $this->returnError("s001", "something went wrong !");
+            return $this->returnErrorResponse("something went wrong !",400);
         }
     }
 
@@ -60,16 +60,15 @@ class VerificationController extends Controller
         try {
 
             DB::beginTransaction();
-            $phone = Str::substr($request->phone, 0, 4) == '+200' ? str_replace('+200', '+20', $request->phone) : $request->phone;
             $user = JWTAuth::parseToken()->authenticate();
             $pastVerify = User_verify_code::where('user_id', $user->id)->where('type', "phone")->first();
-            if($pastVerify->verified == 1){
+            if(isset($pastVerify) && $pastVerify->verified == 1){
                 return $this->returnSuccessMessage("You are verified !");
             }
 
-            $response_content = $phoneVerificationService->verify_msegat($phone);
+            $response_content = $phoneVerificationService->verify_msegat($user->phone);
 
-            if($response_content['message'] == "Success"){
+            if($response_content['code'] == 1){
 
                 if(isset($pastVerify)){
                     $pastVerify->delete();
@@ -87,8 +86,8 @@ class VerificationController extends Controller
             return $this->returnData("verify_code", $response_content);
 
         } catch (\Exception $e) {
-            //return $this->returnData("data", $e);
-            return $this->returnError("s001", "something went wrong !");
+            //return $this->returnData("data", dd($e));
+            return $this->returnErrorResponse("something went wrong !",400);
         }
     }
 
@@ -116,13 +115,13 @@ class VerificationController extends Controller
                 return $this->returnSuccessMessage("Phone verified !");
 
             }else{
-                return $this->returnError("s001", "something went wrong_!");
+                return $this->returnErrorResponse("something went wrong_!",400);
             }
 
 
         } catch (\Exception $e) {
             //return $this->returnData("data", $e);
-            return $this->returnError("s001", "something went wrong !");
+            return $this->returnErrorResponse("something went wrong !",400);
         }
     }
 

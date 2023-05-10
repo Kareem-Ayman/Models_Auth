@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PhoneVerifyRequest;
 use App\Http\Requests\ReceiveForgetRequest;
+use App\Http\Requests\ResetPassForgetRequest;
 use App\Http\Requests\SendForgetRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\VerificationRequest;
@@ -39,8 +40,12 @@ class ForgetPasswordController extends Controller
             if($request->type == 1){
                 $code = random_int(1000,9999);
                 $cur_user = User::where('email', $request->value)->first();
+                $pastVerify = User_verify_code::where('user_id', $cur_user->id)->where('type', "phone")->first();
+                if(! isset($pastVerify) || $pastVerify->verified != 1){
+                    return $this->returnErrorResponse("You are not verified !",400);
+                }
                 if(! $cur_user){
-                    return $this->returnSuccessMessage("Email not found !");
+                    return $this->returnErrorResponse("Email not found !",400);
                 }
                 $verify = User_verify_code::updateOrCreate(
                     ['user_id' => $cur_user->id, 'type' => "forget_email"],
@@ -51,13 +56,19 @@ class ForgetPasswordController extends Controller
                 return $this->returnSuccessMessage("Email sent successfully !");
             }else{
 
-                $response_content = $phoneVerificationService->verify_msegat($request->value);
+                $phone = PhoneNumber::make($request->value, PHONE_COUNTRIES);
+                $phone->formatE164();
+                $cur_user = User::where('phone', $phone)->first();
+                if(! $cur_user){
+                    return $this->returnErrorResponse("Phone not found !",400);
+                }
+                $pastVerify = User_verify_code::where('user_id', $cur_user->id)->where('type', "phone")->first();
+                if(! isset($pastVerify) || $pastVerify->verified != 1){
+                    return $this->returnErrorResponse("You are not verified !",400);
+                }
 
+                $response_content = $phoneVerificationService->verify_msegat($request->value);
                 if($response_content['code'] == 1){
-                    $cur_user = User::where('phone', $request->value)->first();
-                    if(! $cur_user){
-                        return $this->returnSuccessMessage("Phone not found !");
-                    }
                     $verify = User_verify_code::updateOrCreate(
                         ['user_id' => $cur_user->id, 'type' => "forget_phone"],
                         ['code' => $response_content['id'], 'verified' => 0]
@@ -72,7 +83,7 @@ class ForgetPasswordController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             //return $this->returnData("data", dd($e));
-            return $this->returnError("s001", "something went wrong !");
+            return $this->returnErrorResponse("something went wrong !", 400);
         }
     }
 
@@ -84,7 +95,7 @@ class ForgetPasswordController extends Controller
             if($request->type == 1){
                 $cur_user = User::where('email', $request->value)->first();
                 if(! $cur_user){
-                    return $this->returnSuccessMessage("Email not found !");
+                    return $this->returnErrorResponse("Email not found !",400);
                 }
                 $pastVerify = User_verify_code::where('code', $request->code)->where('type', 'forget_email')->where('user_id', $cur_user->id)->first();
                 if(isset($pastVerify)){
@@ -93,14 +104,14 @@ class ForgetPasswordController extends Controller
                     DB::commit();
                     return $this->returnSuccessMessage("You are verified !");
                 }else{
-                    return $this->returnSuccessMessage("Not found !");
+                    return $this->returnErrorResponse("Not found !",400);
                 }
 
             }else{
 
                 $cur_user = User::where('phone', $request->value)->first();
                 if(! $cur_user){
-                    return $this->returnSuccessMessage("Email not found !");
+                    return $this->returnErrorResponse("Phone not found !",400);
                 }
                 $pastVerify = User_verify_code::where('type', 'forget_phone')->where('user_id', $cur_user->id)->first();
                 if(isset($pastVerify)){
@@ -114,12 +125,12 @@ class ForgetPasswordController extends Controller
                         DB::commit();
                         return $this->returnSuccessMessage("You are verified !");
                     }else{
-                        return $this->returnSuccessMessage("something went wrong !");
+                        return $this->returnErrorResponse("something went wrong !",400);
                     }
 
 
                 }else{
-                    return $this->returnSuccessMessage("Not found !");
+                    return $this->returnErrorResponse("Not found !",400);
                 }
 
             }
@@ -127,7 +138,51 @@ class ForgetPasswordController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             //return $this->returnData("data", dd($e));
-            return $this->returnError("s001", "something went wrong !");
+            return $this->returnErrorResponse("something went wrong !", 400);
+        }
+    }
+
+
+    public function reset_pass_forget(ResetPassForgetRequest $request){
+        try{
+            DB::beginTransaction();
+            if($request->type == 1){
+                $cur_user = User::where('email', $request->value)->first();
+                if(! $cur_user){
+                    return $this->returnErrorResponse("Email not found !",400);
+                }
+                $pastVerify = User_verify_code::where('type', 'forget_email')->where('user_id', $cur_user->id)->where('updated_at', '>=', Carbon::now()->subMinutes(3))->first();
+                if(isset($pastVerify)){
+                    $cur_user->password = bcrypt($request->password);
+                    $cur_user->save();
+                    DB::commit();
+                    return $this->returnSuccessMessage("Password Reset Successfully !");
+                }else{
+                    return $this->returnErrorResponse("Session Expired !",400);
+                }
+
+            }else{
+
+                $cur_user = User::where('phone', $request->value)->first();
+                if(! $cur_user){
+                    return $this->returnErrorResponse("Phone not found !",400);
+                }
+                $pastVerify = User_verify_code::where('type', 'forget_phone')->where('user_id', $cur_user->id)->where('updated_at', '>=', Carbon::now()->subMinutes(3))->first();
+                if(isset($pastVerify)){
+                    $cur_user->password = bcrypt($request->password);
+                    $cur_user->save();
+                    DB::commit();
+                    return $this->returnSuccessMessage("Password Reset Successfully !");
+                }else{
+                    return $this->returnErrorResponse("Session Expired !",400);
+                }
+
+            }
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            //return $this->returnData("data", dd($e));
+            return $this->returnErrorResponse("something went wrong !",400);
         }
     }
 

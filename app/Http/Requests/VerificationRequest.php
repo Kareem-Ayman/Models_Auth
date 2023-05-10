@@ -34,14 +34,14 @@ class VerificationRequest extends FormRequest
     {
 
         return [
-            'phone' => ['required', new PhoneCustomRule(), 'exists:users,phone', new ExistToUserRule('phone')],
+            //'phone' => ['required', new PhoneCustomRule(), 'exists:users,phone', new ExistToUserRule('phone')],
         ];
     }
 
     public function failedValidation(Validator $validator)
     {
 
-        throw new HttpResponseException($this->returnError("001", $validator->errors()->first()));
+        throw new HttpResponseException($this->returnErrorResponse($validator->errors()->first(), 400));
 
     }
 }

@@ -19,11 +19,12 @@ trait GeneralTrait
         ]);
     }
 
-    public function returnErrorResponse($msg)
+    public function returnErrorResponse($msg, $code)
     {
         return response()->json([
+            'status' => false,
             'msg' => $msg
-        ], 401);
+        ], $code);
     }
 
 
