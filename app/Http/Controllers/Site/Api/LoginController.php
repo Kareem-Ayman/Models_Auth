@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Site\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FirebaseRequest;
 use App\Http\Requests\UserLoginRequest;
+use App\Models\Firebase_token;
 use App\Models\User;
 use App\Traits\GeneralTrait;
 use Validator;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -84,12 +87,26 @@ class LoginController extends Controller
         }
     }
 
-    public function logout(Request $request){
-        JWTAuth::invalidate(JWTAuth::getToken());
-        $user = User::where('api_token', $request->header("token"))->first();
-        $user->api_token = null;
-        $user->save();
-        return $this->returnSuccessMessage("You are logout", "s000");
+    public function logout(FirebaseRequest $request){
+        try {
+
+            DB::beginTransaction();
+
+            JWTAuth::invalidate(JWTAuth::getToken());
+            $firebase_token = Firebase_token::where('user_id', Auth::guard("user_api")->user()->id)->where('firebase_token', $request->firebase_token)->first();
+            //return $this->returnData("data", Auth::guard("user_api")->user()->id);
+
+            if($firebase_token){
+                $firebase_token->user_id = null;
+                $firebase_token->save();
+            }
+            DB::commit();
+            return $this->returnSuccessMessage("You are logout", "s000");
+
+        } catch (Exception $th) {
+            DB::rollback();
+            return $this->returnErrorResponse("Somethis went wrong !", 400);
+        }
 
     }
 

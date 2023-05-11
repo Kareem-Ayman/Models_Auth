@@ -15,7 +15,7 @@ class CreateUserVerifyCodesTable extends Migration
     {
         //Schema::enableForeignKeyConstraints();
         Schema::create('user_verify_codes', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->unsignedBigInteger('user_id');
             $table->string('code');
             $table->tinyInteger('verified');

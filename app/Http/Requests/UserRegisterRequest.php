@@ -36,8 +36,8 @@ class UserRegisterRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users|max:255',
             'password' => 'required|string|min:8',
-            'key_phone' => 'required|string',
-            'phone' => ['required', new PhoneCustomRule(), 'unique:users'],
+            //'key_phone' => 'required|string',
+            //'phone' => ['required', new PhoneCustomRule(), 'unique:users'],
         ];
     }
 

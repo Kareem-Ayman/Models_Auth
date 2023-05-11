@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'getLang'=> \App\Http\Middleware\GetLang::class,
         'auth_gurad'=> \App\Http\Middleware\AssignGuard::class,
+        'auth_gurad_or_not'=> \App\Http\Middleware\AssignOrNotGuard::class,
     ];
 }

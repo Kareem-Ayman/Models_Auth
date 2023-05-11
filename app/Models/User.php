@@ -13,7 +13,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     use Notifiable, AuthMustVerifyEmail;
 
     protected $fillable = [
-        'name', 'email', 'password','phone','api_token'
+        'name', 'email', 'password','phone', 'register_type', 'api_token'
     ];
 
     protected $hidden = [
@@ -22,6 +22,10 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
     public function codes() {
         return $this -> hasMany(User_verify_code::class,'user_id');
+    }
+
+    public function firebase_tokens() {
+        return $this -> hasMany(Firebase_token::class,'user_id');
     }
 
     public static function verefied_codes($user)

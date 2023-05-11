@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.5",
         "mcamara/laravel-localization": "^1.8",
         "propaganistas/laravel-phone": "^4.2",
+        "socialiteproviders/google": "^4.1",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {

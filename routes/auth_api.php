@@ -33,12 +33,19 @@ Route::group([
         Route::post('/emailVerify', 'VerificationController@emailVerify')->name('user.emailVerify');
         Route::post('/phoneVerify', 'VerificationController@phoneVerify')->name('user.phoneVerify');
         Route::post('/phone_verify_done', 'VerificationController@phone_verify_done')->name('user.phone_verify_done');
+
         Route::post('/logout', 'LoginController@logout')->name('user.logout');
 
     });
 
+
+    Route::group(['middleware' => 'auth_gurad_or_not:user_api'], function () {
+        Route::post('/set_firebase_token', 'FirebaseTokenController@set_firebase_token')->name('user.set_firebase_token');
+    });
+
     Route::group(['middleware' => 'guest'], function () {
         Route::post('/register', 'RegisterController@register')->name('user.register');
+        Route::post('/register_social', 'RegisterController@register_social')->name('user.register_social');
         Route::post('/refreshToken', 'LoginController@refreshToken')->name('user.refreshToken');
         Route::post('/login', 'LoginController@login')->name('user.login');
         Route::post('/send_forget', 'ForgetPasswordController@send_forget')->name('user.send_forget');

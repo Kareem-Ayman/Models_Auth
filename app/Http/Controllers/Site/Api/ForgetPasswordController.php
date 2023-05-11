@@ -40,7 +40,10 @@ class ForgetPasswordController extends Controller
             if($request->type == 1){
                 $code = random_int(1000,9999);
                 $cur_user = User::where('email', $request->value)->first();
-                $pastVerify = User_verify_code::where('user_id', $cur_user->id)->where('type', "phone")->first();
+                if(! isset($cur_user) || ($cur_user->register_type == "google" || $cur_user->register_type == "apple")){
+                    return $this->returnErrorResponse("Not for Social account !",400);
+                }
+                $pastVerify = User_verify_code::where('user_id', $cur_user->id)->where('type', "email")->first();
                 if(! isset($pastVerify) || $pastVerify->verified != 1){
                     return $this->returnErrorResponse("You are not verified !",400);
                 }
